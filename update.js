@@ -2,6 +2,7 @@
 import { google } from "googleapis";
 import 'dotenv/config';
 
+// Fonction pour mettre à jour Google Sheet
 export async function updateSheet(season, choice) {
   if (!season || !choice) throw new Error("Paramètres manquants");
 
@@ -36,8 +37,18 @@ export async function updateSheet(season, choice) {
   return `Cellule ${cell} mise à jour avec ${choice}`;
 }
 
-// Handler Vercel
+// Handler Vercel (serverless)
 export default async function handler(req, res) {
+  // --- CORS headers ---
+  res.setHeader("Access-Control-Allow-Origin", "*"); // ou remplacer par ton front
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Handle preflight OPTIONS request
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") return res.status(405).json({ message: "Méthode non autorisée" });
 
   const { season, choice } = req.body;
