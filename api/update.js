@@ -1,4 +1,3 @@
 // api/update.js
-import handler from "../update.js"; // ton fichier root
-
+import handler from "../update.js";
 export default handler;

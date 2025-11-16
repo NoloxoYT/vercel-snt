@@ -1,17 +1,8 @@
-// server.js (à la racine du projet)
-import express from "express";
+// update.js (root)
 import { google } from "googleapis";
 import 'dotenv/config';
-import bodyParser from "body-parser";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware pour parser JSON
-app.use(bodyParser.json());
-
-// Fonction pour mettre à jour Google Sheet
-async function updateSheet(season, choice) {
+export async function updateSheet(season, choice) {
   if (!season || !choice) throw new Error("Paramètres manquants");
 
   const auth = new google.auth.GoogleAuth({
@@ -26,17 +17,10 @@ async function updateSheet(season, choice) {
   const spreadsheetId = process.env.SPREADSHEET_ID;
 
   const seasonToCell = {
-    "s01": "B2",
-    "s02": "C2",
-    "s03": "D2",
-    "s04": "E2",
-    "s05": "F2",
-    "s06": "G2",
-    "s07": "H2",
-    "s08": "I2",
-    "s09": "J2",
-    "s10": "K2",
-    "s11": "L2"
+    "s01": "B2", "s02": "C2", "s03": "D2",
+    "s04": "E2", "s05": "F2", "s06": "G2",
+    "s07": "H2", "s08": "I2", "s09": "J2",
+    "s10": "K2", "s11": "L2"
   };
 
   const cell = seasonToCell[season];
@@ -52,9 +36,12 @@ async function updateSheet(season, choice) {
   return `Cellule ${cell} mise à jour avec ${choice}`;
 }
 
-// Route API POST
-app.post("/api/update", async (req, res) => {
+// Handler Vercel
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ message: "Méthode non autorisée" });
+
   const { season, choice } = req.body;
+
   try {
     const result = await updateSheet(season, choice);
     res.status(200).json({ message: result });
@@ -62,21 +49,4 @@ app.post("/api/update", async (req, res) => {
     console.error("❌ Erreur Sheets", err);
     res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
-});
-
-// Démarrage du serveur
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur lancé sur http://localhost:${PORT}`);
-});
-
-// Test local si lancé directement
-if (process.argv[1].endsWith("server.js")) {
-  (async () => {
-    try {
-      const test = await updateSheet("s01", "humain");
-      console.log("✅ Test local OK:", test);
-    } catch (err) {
-      console.error("❌ Test local erreur:", err.message);
-    }
-  })();
 }
